@@ -8,6 +8,7 @@
 import requests
 import re
 import json
+import pymysql
 
 from fake_useragent import UserAgent
 
@@ -47,11 +48,28 @@ class TargetSpider(object):
                 'image': item[1],
                 'title': item[2],
                 'actor': item[3].strip()[3:],
-                'time': item[4][5:],
+                'shooting_time': item[4][5:],
                 'score': item[5] + item[6],
             }
 
     @staticmethod
     def write_to_file(content):
-        with open('result.txt', 'a', encoding='utf-8') as f:
+        with open('file/result.txt', 'a', encoding='utf-8') as f:
             f.write(json.dumps(content, ensure_ascii=False) + '\n')
+
+    @staticmethod
+    def save_to_mysql(content):
+        db = pymysql.connect(host="localhost", user="root",
+                             password="", db="movie", port=3306)
+        cur = db.cursor()
+        sql_inset = """INSERT INTO maoyan (movie_index, image, title, actor, shooting_time, score) VALUES ("%s","%s","%s","%s","%s","%s") """ % (
+            content['index'], content['image'], content['title'], content['actor'], content['shooting_time'],
+            content['score'])
+        try:
+            cur.execute(sql_inset)
+            db.commit()
+        except Exception as e:
+            print('错误回滚')
+            db.rollback()
+        finally:
+            db.close()

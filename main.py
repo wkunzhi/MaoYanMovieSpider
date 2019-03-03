@@ -14,3 +14,4 @@ if __name__ == '__main__':
         visit = TargetSpider(URL+'?offset='+str(i*10))
         for item in visit.parse_one_page():
             visit.write_to_file(item)
+            visit.save_to_mysql(item)  # 不需要存数据库 就注释掉
